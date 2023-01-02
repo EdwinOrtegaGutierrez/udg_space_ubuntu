@@ -1,0 +1,44 @@
+# DESCARGAR UBUNTU 20.04
+FROM ubuntu:focal
+
+# CONFIGURAR ZONA HORARIA
+ENV TZ 'America/Mexico_City' 
+RUN echo $TZ > /etc/timezone && \ 
+    apt-get update && apt-get install -y tzdata && \ 
+    rm /etc/localtime && \ 
+    ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && \ 
+    dpkg-reconfigure -f noninteractive tzdata && \ 
+    apt-get clean
+
+# ACTUALIZAR E INSTALAR LAS DEPENDENCIAS DE UBUNTU
+RUN apt-get update && apt-get upgrade -y ; apt-get install -y curl && apt-get install -y gnupg2 && apt-get install -y lsb-core
+
+# INSTALAR NANO Y NEOFETCH
+RUN apt-get -y install nano && apt-get -y install neofetch
+
+# DESCARGAR E INSTALAR ROS NOETIC
+# http://wiki.ros.org/noetic/Installation/Ubuntu
+RUN sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
+
+RUN curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | apt-key add -
+
+RUN apt-get update
+
+# VERSIÓN COMPLETA DE ROS
+RUN apt-get -y install ros-noetic-desktop-full
+
+# INSTALAR DEPENDENCIAS DE PYTHON
+RUN apt-get -y install python3-rosdep python3-rosinstall python3-rosinstall-generator python3-wstool build-essential
+
+RUN sudo rosdep init
+
+RUN rosdep update
+
+RUN apt-get update && apt-get upgrade -y
+
+# CONFIGURAR PATH
+RUN echo "source /opt/ros/noetic/setup.bash" >> ~/.bashrc
+
+EXPOSE 3389
+
+CMD bash
